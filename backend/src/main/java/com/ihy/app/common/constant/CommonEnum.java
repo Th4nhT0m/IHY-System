@@ -1,5 +1,5 @@
 package com.ihy.app.common.constant;
 
-public class  CommonEnum {
+public enum CommonEnum {
 
 }
