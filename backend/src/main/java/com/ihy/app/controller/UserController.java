@@ -5,7 +5,6 @@ import com.ihy.app.common.response.ApiResponse;
 import com.ihy.app.dto.request.UserCreateRequest;
 import com.ihy.app.dto.request.UserUpdateRequest;
 import com.ihy.app.dto.response.UserResponse;
-import com.ihy.app.entity.Users;
 import com.ihy.app.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -40,15 +39,27 @@ public class UserController {
     }
 
     @PutMapping("/{userId}")
-    public void updateUser(@PathVariable String userId ,@RequestBody UserUpdateRequest request ){
-        service.updateUser(userId,request);
+    public ApiResponse<UserResponse> updateUser(@PathVariable String userId ,@RequestBody UserUpdateRequest request ){
+        ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
+        try {
+            service.updateUser(userId,request);
+            apiResponse.setCode(AppConstants.SUCCESS_CODE);
+        }catch (Exception e){
+            throw  e;
+        }
+        return apiResponse;
     }
 
     @PutMapping("/delete/{userId}")
-    public void deleteUser(@PathVariable String userId){
-        service.disableUser(userId);
+    public ApiResponse<UserResponse> deleteUser(@PathVariable String userId){
+        ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
+        try {
+            service.disableUser(userId);
+            apiResponse.setCode(AppConstants.SUCCESS_CODE);
+        }catch (Exception e){
+            throw  e;
+        }
+        return apiResponse;
     }
-
-
 
 }
