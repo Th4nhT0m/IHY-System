@@ -11,7 +11,7 @@ import com.ihy.app.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,17 +21,22 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserService {
 
-    @Autowired
     UserRepository userRepository;
 
-    @Autowired
     UsersMapper usersMapper;
+
+    PasswordEncoder passwordEncoder;
 
     public UserResponse createUser(UserCreateRequest request) {
 
-        if (userRepository.existsByEmail(request.getEmail())) {
+
+        //Check if user already exists in database when creating new one
+        if(userRepository.existsByEmail(request.getEmail())){
             throw new AppException(ErrorCode.USER_EXISTS);
         }
+
+        request.setPassword(passwordEncoder.encode(request.getPassword()));
+
         Users userNew = usersMapper.toCreateUser(request);
         return usersMapper.toUserResponse(userRepository.save(userNew));
     }

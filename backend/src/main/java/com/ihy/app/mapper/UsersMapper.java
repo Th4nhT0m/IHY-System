@@ -14,6 +14,7 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface UsersMapper {
+    @Mapping(target = "isActive", constant = "1")
     Users toCreateUser(UserCreateRequest request);
 
     void toUpdateUser(@MappingTarget Users users, UserUpdateRequest request);

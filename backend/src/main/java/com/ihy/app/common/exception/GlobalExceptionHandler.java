@@ -2,7 +2,7 @@ package com.ihy.app.common.exception;
 
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import com.ihy.app.common.constant.ErrorCode;
-import com.ihy.app.common.response.ApiResponse;
+import com.ihy.app.common.dto.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
