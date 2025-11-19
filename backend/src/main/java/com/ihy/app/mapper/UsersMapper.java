@@ -19,7 +19,6 @@ public interface UsersMapper {
 
     void toUpdateUser(@MappingTarget Users users, UserUpdateRequest request);
 
-    @Mapping(target = "password",ignore = true)
     UserResponse toUserResponse(Users users);
 
     List<UserResponse> toResponseUserList(List<Users> users);

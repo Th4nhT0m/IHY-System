@@ -8,6 +8,7 @@ import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Entity
 @Data
@@ -46,5 +47,9 @@ public class Users {
 
     @Column
     int isActive = 1; // Users can not be deleted but can only be disabled from the system via the isActive property
+
+    @Column
+    @NotBlank
+    Set<String> role;
 
 }

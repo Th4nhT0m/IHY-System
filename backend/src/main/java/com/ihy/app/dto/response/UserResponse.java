@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserResponse {
 
     String name;
-    String password;
     String email;
     String phone;
     LocalDate birthday;
+    Set<String> role;
 }

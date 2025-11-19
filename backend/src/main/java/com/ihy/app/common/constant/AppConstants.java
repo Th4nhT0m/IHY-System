@@ -7,4 +7,9 @@ import lombok.experimental.FieldDefaults;
 public class AppConstants {
     public static final String SUCCESS_CODE = "200";
 
+    public enum ROLE{
+        ADMIN,
+        USER
+    }
+
 }
