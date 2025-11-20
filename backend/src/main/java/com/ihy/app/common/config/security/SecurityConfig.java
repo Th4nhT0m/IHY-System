@@ -18,20 +18,16 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import javax.crypto.spec.SecretKeySpec;
 
+import static com.ihy.app.common.constant.AppConstants.PUBLIC_ACCESS;
+
 @Configuration
 @EnableWebSecurity
-@FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class SecurityConfig {
 
     @NonFinal
     @Value("${jwt.signerKey}")
     protected String SIGN_KEY;
-
-    public static final String[] PUBLIC_ACCESS = {
-            "/user/register",
-            "/auth/login",
-            "/auth/introspect"
-    };
 
     @Bean
     PasswordEncoder passwordEncoder() {

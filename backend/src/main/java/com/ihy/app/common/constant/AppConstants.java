@@ -12,4 +12,10 @@ public class AppConstants {
         USER
     }
 
+    public static final String[] PUBLIC_ACCESS = {
+            "/user/register",
+            "/auth/login",
+            "/auth/introspect"
+    };
+
 }

@@ -38,18 +38,16 @@ public class Users {
     String email;
 
     @Column
-    @NotBlank
     String phone;
 
     @Column
-    @NotNull //LocalDate don't NotBlank
     LocalDate birthday;
 
     @Column
     int isActive = 1; // Users can not be deleted but can only be disabled from the system via the isActive property
 
     @Column
-    @NotBlank
+    @NotNull
     Set<String> role;
 
 }

@@ -1,5 +1,6 @@
 package com.ihy.app.service;
 
+import com.ihy.app.common.constant.AppConstants;
 import com.ihy.app.common.constant.ErrorCode;
 import com.ihy.app.common.exception.AppException;
 import com.ihy.app.dto.request.UserCreateRequest;
@@ -14,6 +15,8 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -38,6 +41,12 @@ public class UserService {
         request.setPassword(passwordEncoder.encode(request.getPassword()));
 
         Users userNew = usersMapper.toCreateUser(request);
+
+        //Set default role
+        HashSet<String> roles = new HashSet<>();
+        roles.add(AppConstants.ROLE.USER.name());
+        userNew.setRole(roles);
+
         return usersMapper.toUserResponse(userRepository.save(userNew));
     }
 
@@ -49,13 +58,15 @@ public class UserService {
         try {
 
             Users userExisted = this.getUser(userId);
-            if (!userExisted.equals(null)) {
-                userExisted = getUser(userId);
-                usersMapper.toUpdateUser(userExisted, request);
-                userRepository.save(userExisted);
-            } else {
 
+            // Only encrypt password if changed
+            String newPassword = request.getPassword();
+            if (newPassword != null && !passwordEncoder.matches(newPassword, userExisted.getPassword())) {
+                userExisted.setPassword(passwordEncoder.encode(newPassword));
             }
+
+            usersMapper.toUpdateUser(userExisted, request);
+            userRepository.save(userExisted);
 
         } catch (Exception e) {
             throw e;
