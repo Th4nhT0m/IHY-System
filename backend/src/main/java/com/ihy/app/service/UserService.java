@@ -12,13 +12,19 @@ import com.ihy.app.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -50,23 +56,24 @@ public class UserService {
         return usersMapper.toUserResponse(userRepository.save(userNew));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getAllUser() {
         return usersMapper.toResponseUserList(userRepository.findActiveUsers());
     }
 
-    public void updateUser(String userId, UserUpdateRequest request) {
+    @PostAuthorize("returnObject.email == authentication.name or hasRole('ADMIN')")
+    public UserResponse updateUser(String userId, UserUpdateRequest request) {
         try {
 
             Users userExisted = this.getUser(userId);
 
             // Only encrypt password if changed
-            String newPassword = request.getPassword();
-            if (newPassword != null && !passwordEncoder.matches(newPassword, userExisted.getPassword())) {
-                userExisted.setPassword(passwordEncoder.encode(newPassword));
-            }
+            Optional.ofNullable(request.getPassword())
+                    .filter(p -> !passwordEncoder.matches(p, userExisted.getPassword()))
+                    .ifPresent(p -> userExisted.setPassword(passwordEncoder.encode(p)));
 
             usersMapper.toUpdateUser(userExisted, request);
-            userRepository.save(userExisted);
+            return  usersMapper.toUserResponse(userRepository.save(userExisted));
 
         } catch (Exception e) {
             throw e;
@@ -78,7 +85,18 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_EXISTS.getMessage()));
     }
 
+    @PostAuthorize("returnObject.email == authentication.name or hasRole('ADMIN')")
+    public UserResponse getInformation() {
+        log.warn("getAuthentication",SecurityContextHolder.getContext().getAuthentication());
+        var context = SecurityContextHolder.getContext().getAuthentication().getName();
+        Users user = userRepository.findUsersByEmail(context).orElseThrow(
+                ()-> new RuntimeException(ErrorCode.USER_NOT_EXISTS.getMessage())
+        );
+        return usersMapper.toUserResponse(user);
+    }
 
+
+    @PreAuthorize("hasRole('ADMIN')")
     public void disableUser(String userId) {
         try {
             Users usersDisable = userRepository.findById(userId).orElse(null);

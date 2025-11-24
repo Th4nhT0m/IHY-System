@@ -35,17 +35,25 @@ public class UserController {
 
     @GetMapping("")
     public ApiResponse<List<UserResponse>> getAllUser(){
-        ApiResponse<List<UserResponse>> apiResponse = new ApiResponse<>();
-        apiResponse.setResult(service.getAllUser());
-        apiResponse.setCode(AppConstants.SUCCESS_CODE);
-        return apiResponse;
+        return ApiResponse.<List<UserResponse>>builder()
+                .result(service.getAllUser())
+                .code(AppConstants.SUCCESS_CODE)
+                .build();
+    }
+
+    @GetMapping("/information")
+    public ApiResponse<UserResponse> getMyInformation(){
+        return ApiResponse.<UserResponse>builder()
+                .result(service.getInformation())
+                .code(AppConstants.SUCCESS_CODE)
+                .build();
     }
 
     @PutMapping("/{userId}")
     public ApiResponse<UserResponse> updateUser(@PathVariable String userId ,@RequestBody UserUpdateRequest request ){
         ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
         try {
-            service.updateUser(userId,request);
+            apiResponse.setResult(service.updateUser(userId,request));
             apiResponse.setCode(AppConstants.SUCCESS_CODE);
         }catch (Exception e){
             throw  e;
