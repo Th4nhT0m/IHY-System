@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,6 +25,7 @@ import static com.ihy.app.common.constant.AppConstants.PUBLIC_ACCESS;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SecurityConfig {
 
@@ -41,7 +43,6 @@ public class SecurityConfig {
         // Configure authorization rules for incoming HTTP requests.
         httpSecurity.authorizeHttpRequests(request -> {
             request.requestMatchers(HttpMethod.POST, PUBLIC_ACCESS).permitAll()
-                    .requestMatchers(HttpMethod.GET, "/user").hasAuthority("ROLE_ADMIN")
                     .anyRequest().authenticated();
         });
 
