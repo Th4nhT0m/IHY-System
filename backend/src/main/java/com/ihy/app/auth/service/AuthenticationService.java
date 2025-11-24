@@ -22,11 +22,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.StringJoiner;
 
 @Slf4j
 @Service
@@ -85,7 +87,7 @@ public class AuthenticationService {
         }
 
         // Generate a JWT token for the authenticated user.
-        var token = generateToken(request);
+        var token = generateToken(user);
 
         // Return the authentication response containing the generated token.
         return AuthenticationResponse.builder()
@@ -99,7 +101,7 @@ public class AuthenticationService {
      * @param request the authentication request containing user credentials (email, etc.)
      * @return a compact serialized JWS (JWT) string in format: header.payload.signature
      */
-    private String generateToken(AuthenticationRequest request) {
+    private String generateToken(Users request) {
 
         //Define the JWT header - specifies signing algorithm (HMAC-SHA256)
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS256);
@@ -113,9 +115,8 @@ public class AuthenticationService {
                 .expirationTime(new Date(
                         Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
                 ))
-                //TODO
-                // Custom claim: user role
-                .claim("role", "request.getRole()")
+
+                .claim("role",buildScope(request))
                 .build();
         //Convert claims to JSON payload
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
@@ -132,6 +133,16 @@ public class AuthenticationService {
             throw new RuntimeException(e);
         }
 
+    }
+
+    private String buildScope(Users users){
+        StringJoiner joiner = new StringJoiner(" ");
+        if (!CollectionUtils.isEmpty(users.getRole())){
+            users.getRole().forEach(
+                    role -> joiner.add(role)
+            );
+        }
+        return joiner.toString();
     }
 
 }

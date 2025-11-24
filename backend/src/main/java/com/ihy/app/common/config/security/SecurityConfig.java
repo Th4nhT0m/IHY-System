@@ -14,6 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -39,13 +41,15 @@ public class SecurityConfig {
         // Configure authorization rules for incoming HTTP requests.
         httpSecurity.authorizeHttpRequests(request -> {
             request.requestMatchers(HttpMethod.POST, PUBLIC_ACCESS).permitAll()
+                    .requestMatchers(HttpMethod.GET, "/user").hasAuthority("ROLE_ADMIN")
                     .anyRequest().authenticated();
         });
 
         // Configure the application as an OAuth2 Resource Server using JWT for authentication
         httpSecurity.oauth2ResourceServer(resourceServer -> {
-            resourceServer.jwt( jwtConfigurer -> {
-                jwtConfigurer.decoder(jwtDecoder());
+            resourceServer.jwt(jwtConfigurer -> {
+                jwtConfigurer.decoder(jwtDecoder())
+                        .jwtAuthenticationConverter(jwtAuthenticationConverter());
             });
         });
 
@@ -56,13 +60,28 @@ public class SecurityConfig {
     }
 
     @Bean
-    JwtDecoder jwtDecoder(){
-        SecretKeySpec secretKey = new SecretKeySpec(SIGN_KEY.getBytes(),"HS256");
+    JwtDecoder jwtDecoder() {
+        SecretKeySpec secretKey = new SecretKeySpec(SIGN_KEY.getBytes(), "HS256");
         // This decoder will be responsible for validating and decoding incoming JWT tokens.
         return NimbusJwtDecoder
                 .withSecretKey(secretKey)
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
     }
+
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        // Change prefix from "SCOPE_" to "ROLE_"
+        grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("role");
+
+        // Main converter that transforms the JWT token into an Authentication object.
+        JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
+        jwtConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        return jwtConverter;
+    }
+
 
 }
