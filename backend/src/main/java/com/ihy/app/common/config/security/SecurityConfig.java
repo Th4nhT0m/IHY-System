@@ -51,7 +51,7 @@ public class SecurityConfig {
             resourceServer.jwt(jwtConfigurer -> {
                 jwtConfigurer.decoder(jwtDecoder())
                         .jwtAuthenticationConverter(jwtAuthenticationConverter());
-            });
+            }).authenticationEntryPoint(new JwtAuthenticationEntryPoint());
         });
 
         //TODO
