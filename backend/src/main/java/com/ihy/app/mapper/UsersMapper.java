@@ -17,6 +17,7 @@ public interface UsersMapper {
     @Mapping(target = "isActive", constant = "1")
     Users toCreateUser(UserCreateRequest request);
 
+    @Mapping(target = "password", ignore = true)
     void toUpdateUser(@MappingTarget Users users, UserUpdateRequest request);
 
     UserResponse toUserResponse(Users users);
