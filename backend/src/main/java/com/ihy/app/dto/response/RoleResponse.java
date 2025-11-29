@@ -1,10 +1,9 @@
 package com.ihy.app.dto.response;
 
-import com.ihy.app.entity.Role;
+import com.ihy.app.entity.Permission;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDate;
 import java.util.Set;
 
 @Data
@@ -12,12 +11,9 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserResponse {
+public class RoleResponse {
 
-    String id;
     String name;
-    String email;
-    String phone;
-    LocalDate birthday;
-    Set<RoleResponse> roles;
+    String description;
+    Set<PermissionResponse> permission;
 }

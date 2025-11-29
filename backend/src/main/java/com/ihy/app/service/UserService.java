@@ -1,6 +1,5 @@
 package com.ihy.app.service;
 
-import com.ihy.app.common.constant.AppConstants;
 import com.ihy.app.common.constant.ErrorCode;
 import com.ihy.app.common.exception.AppException;
 import com.ihy.app.dto.request.UserCreateRequest;
@@ -8,23 +7,21 @@ import com.ihy.app.dto.request.UserUpdateRequest;
 import com.ihy.app.dto.response.UserResponse;
 import com.ihy.app.entity.Users;
 import com.ihy.app.mapper.UsersMapper;
+import com.ihy.app.repository.RoleRepository;
 import com.ihy.app.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -33,6 +30,8 @@ public class UserService {
     UserRepository userRepository;
 
     UsersMapper usersMapper;
+
+    RoleRepository roleRepository;
 
     PasswordEncoder passwordEncoder;
 
@@ -48,23 +47,20 @@ public class UserService {
 
         Users userNew = usersMapper.toCreateUser(request);
 
-        //Set default role
-        HashSet<String> roles = new HashSet<>();
-        roles.add(AppConstants.ROLE.USER.name());
-        userNew.setRole(roles);
+        var roles = roleRepository.findAllById(request.getRoles());
+        userNew.setRoles(new HashSet<>(roles));
 
         return usersMapper.toUserResponse(userRepository.save(userNew));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('READ_DATA')")
     public List<UserResponse> getAllUser() {
         return usersMapper.toResponseUserList(userRepository.findActiveUsers());
     }
 
-    @PostAuthorize("returnObject.email == authentication.name or hasRole('ADMIN')")
+    @PostAuthorize("returnObject.email == authentication.name or hasAuthority('READ_DATA')")
     public UserResponse updateUser(String userId, UserUpdateRequest request) {
         try {
-
             Users userExisted = this.getUser(userId);
 
             // Only encrypt password if changed
@@ -73,8 +69,10 @@ public class UserService {
                     .ifPresent(p -> userExisted.setPassword(passwordEncoder.encode(p)));
 
             usersMapper.toUpdateUser(userExisted, request);
-            return  usersMapper.toUserResponse(userRepository.save(userExisted));
 
+            var roles = roleRepository.findAllById(request.getRoles());
+            userExisted.setRoles(new HashSet<>(roles));
+            return  usersMapper.toUserResponse(userRepository.save(userExisted));
         } catch (Exception e) {
             throw e;
         }
@@ -85,9 +83,8 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_EXISTS.getMessage()));
     }
 
-    @PostAuthorize("returnObject.email == authentication.name or hasRole('ADMIN')")
+    @PostAuthorize("returnObject.email == authentication.name or hasAuthority('READ_DATA')")
     public UserResponse getInformation() {
-        log.warn("getAuthentication",SecurityContextHolder.getContext().getAuthentication());
         var context = SecurityContextHolder.getContext().getAuthentication().getName();
         Users user = userRepository.findUsersByEmail(context).orElseThrow(
                 ()-> new RuntimeException(ErrorCode.USER_NOT_EXISTS.getMessage())

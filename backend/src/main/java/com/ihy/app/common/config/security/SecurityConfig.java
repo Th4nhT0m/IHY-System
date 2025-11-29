@@ -74,8 +74,7 @@ public class SecurityConfig {
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        // Change prefix from "SCOPE_" to "ROLE_"
-        grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+
         grantedAuthoritiesConverter.setAuthoritiesClaimName("role");
 
         // Main converter that transforms the JWT token into an Authentication object.

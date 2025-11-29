@@ -14,10 +14,13 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface UsersMapper {
+
+    @Mapping(target = "roles", ignore = true)
     @Mapping(target = "isActive", constant = "1")
     Users toCreateUser(UserCreateRequest request);
 
     @Mapping(target = "password", ignore = true)
+    @Mapping(target = "roles", ignore = true)
     void toUpdateUser(@MappingTarget Users users, UserUpdateRequest request);
 
     UserResponse toUserResponse(Users users);
