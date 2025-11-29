@@ -1,13 +1,16 @@
 package com.ihy.app.dto.response;
 
-import lombok.AccessLevel;
-import lombok.Data;
+import com.ihy.app.entity.Role;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 import java.util.Set;
 
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserResponse {
 
@@ -16,5 +19,5 @@ public class UserResponse {
     String email;
     String phone;
     LocalDate birthday;
-    Set<String> role;
+    Set<RoleResponse> roles;
 }

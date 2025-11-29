@@ -46,8 +46,7 @@ public class Users {
     @Column
     int isActive = 1; // Users can not be deleted but can only be disabled from the system via the isActive property
 
-    @Column
-    @NotNull
-    Set<String> role;
+    @ManyToMany
+    Set<Role> roles;
 
 }
