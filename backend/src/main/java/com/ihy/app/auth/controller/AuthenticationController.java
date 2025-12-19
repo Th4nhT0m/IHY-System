@@ -1,5 +1,6 @@
 package com.ihy.app.auth.controller;
 
+import com.ihy.app.auth.dto.request.LogoutRequest;
 import com.ihy.app.common.constant.AppConstants;
 import com.ihy.app.auth.dto.request.AuthenticationRequest;
 import com.ihy.app.auth.dto.request.IntrospectRequest;
@@ -26,6 +27,8 @@ public class AuthenticationController {
 
     AuthenticationService service;
 
+    IntrospectService introspectService;
+
     @PostMapping("/login")
     ApiResponse<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request){
         var result = service.authenticate(request);
@@ -37,10 +40,20 @@ public class AuthenticationController {
 
     @PostMapping("/introspect")
     ApiResponse<IntrospectResponse> Introspect(@RequestBody IntrospectRequest request) throws ParseException, JOSEException {
-        var result = service.introspect(request);
+        var result = introspectService.introspect(request);
         return ApiResponse.<IntrospectResponse>builder()
                 .code(AppConstants.SUCCESS_CODE)
                 .result(result)
                 .build();
     }
+
+    @PostMapping("/logout")
+    ApiResponse<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
+        service.logout(request);
+        return ApiResponse.<Void>builder()
+                .message(AppConstants.SUCCESS_CODE)
+                .build();
+    }
+
+
 }
