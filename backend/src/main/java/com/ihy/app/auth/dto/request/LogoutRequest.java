@@ -1,5 +1,4 @@
-package com.ihy.app.auth.dto.response;
-
+package com.ihy.app.auth.dto.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -9,6 +8,6 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class IntrospectResponse {
-    boolean isValid;
+public class LogoutRequest {
+    String token;
 }

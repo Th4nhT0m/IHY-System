@@ -1,5 +1,9 @@
 package com.ihy.app.auth.service;
 
+import com.ihy.app.auth.controller.IntrospectService;
+import com.ihy.app.auth.dto.request.LogoutRequest;
+import com.ihy.app.auth.entity.InvalidateToken;
+import com.ihy.app.auth.repository.InvalidateTokenRepository;
 import com.ihy.app.common.constant.ErrorCode;
 import com.ihy.app.auth.dto.request.AuthenticationRequest;
 import com.ihy.app.auth.dto.request.IntrospectRequest;
@@ -29,6 +33,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.StringJoiner;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -40,25 +45,13 @@ public class AuthenticationService {
 
     PasswordEncoder passwordEncoder;
 
+    InvalidateTokenRepository invalidateTokenRepository;
+
+    IntrospectService introspectService;
+
     @NonFinal
     @Value("${jwt.signerKey}")
     protected String SIGN_KEY;
-
-    public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
-        var token = request.getToken();
-        JWSVerifier verifier = new MACVerifier(SIGN_KEY.getBytes());
-
-        SignedJWT signedJWT = SignedJWT.parse(token);
-
-        Date expiratityTimeDate = signedJWT.getJWTClaimsSet().getExpirationTime();
-        var verified = signedJWT.verify(verifier);
-
-
-        return IntrospectResponse.builder()
-                .valid(verified && expiratityTimeDate.after(new Date()))
-                .build();
-    }
-
 
     /**
      * Authenticates a user based on the provided login request
@@ -115,7 +108,7 @@ public class AuthenticationService {
                 .expirationTime(new Date(
                         Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
                 ))
-
+                .jwtID(UUID.randomUUID().toString())
                 .claim("role",buildScope(request))
                 .build();
         //Convert claims to JSON payload
@@ -133,6 +126,24 @@ public class AuthenticationService {
             throw new RuntimeException(e);
         }
 
+    }
+
+    public void logout(LogoutRequest request) throws ParseException, JOSEException {
+        try {
+            var signToken = introspectService.verifyToken(request.getToken());
+
+            String jit = signToken.getJWTClaimsSet().getJWTID();
+            Date expiryTime = signToken.getJWTClaimsSet().getExpirationTime();
+
+            InvalidateToken  invalidateToken = InvalidateToken.builder()
+                    .id(jit)
+                    .expiryDate(expiryTime)
+                    .build();
+            invalidateTokenRepository.save(invalidateToken);
+
+        } catch (AppException exception) {
+            log.info("Token already expired");
+        }
     }
 
     private String buildScope(Users users){
@@ -154,6 +165,5 @@ public class AuthenticationService {
         }
         return joiner.toString();
     }
-
 }
 
