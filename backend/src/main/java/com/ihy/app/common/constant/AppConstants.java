@@ -11,7 +11,8 @@ public class AppConstants {
             "/user/register",
             "/auth/login",
             "/auth/introspect",
-            "/auth/logout"
+            "/auth/logout",
+            "/auth/refresh"
 
     };
 

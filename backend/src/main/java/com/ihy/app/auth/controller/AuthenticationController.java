@@ -1,6 +1,7 @@
 package com.ihy.app.auth.controller;
 
 import com.ihy.app.auth.dto.request.LogoutRequest;
+import com.ihy.app.auth.dto.request.RefreshRequest;
 import com.ihy.app.common.constant.AppConstants;
 import com.ihy.app.auth.dto.request.AuthenticationRequest;
 import com.ihy.app.auth.dto.request.IntrospectRequest;
@@ -55,5 +56,13 @@ public class AuthenticationController {
                 .build();
     }
 
+    @PostMapping("/refresh")
+    ApiResponse<AuthenticationResponse> refreshToken(@RequestBody RefreshRequest request) throws ParseException, JOSEException {
+        var result = service.refreshToken(request);
+        return ApiResponse.<AuthenticationResponse>builder()
+                .code(AppConstants.SUCCESS_CODE)
+                .result(result)
+                .build();
+    }
 
 }

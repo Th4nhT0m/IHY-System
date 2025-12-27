@@ -2,6 +2,7 @@ package com.ihy.app.auth.service;
 
 import com.ihy.app.auth.controller.IntrospectService;
 import com.ihy.app.auth.dto.request.LogoutRequest;
+import com.ihy.app.auth.dto.request.RefreshRequest;
 import com.ihy.app.auth.entity.InvalidateToken;
 import com.ihy.app.auth.repository.InvalidateTokenRepository;
 import com.ihy.app.common.constant.ErrorCode;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -41,7 +43,7 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationService {
 
-    UserRepository repository;
+    UserRepository userRepository;
 
     PasswordEncoder passwordEncoder;
 
@@ -62,7 +64,7 @@ public class AuthenticationService {
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
 
         // Find user in the database by email.
-        Users user = repository.findUsersByEmail(request.getEmail())
+        Users user = userRepository.findUsersByEmail(request.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTS));
 
         // Check if the user account is active.
@@ -126,6 +128,32 @@ public class AuthenticationService {
             throw new RuntimeException(e);
         }
 
+    }
+
+    public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
+
+        var signToken = introspectService.verifyToken(request.getToken());
+
+        String jit = signToken.getJWTClaimsSet().getJWTID();
+        Date expiryTime = signToken.getJWTClaimsSet().getExpirationTime();
+
+        InvalidateToken  invalidateToken = InvalidateToken.builder()
+                .id(jit)
+                .expiryDate(expiryTime)
+                .build();
+        invalidateTokenRepository.save(invalidateToken);
+
+        String userEmail = signToken.getJWTClaimsSet().getSubject();
+
+        Users user = userRepository.findUsersByEmail(userEmail)
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATE));
+
+
+        var token = generateToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(token)
+                .build();
     }
 
     public void logout(LogoutRequest request) throws ParseException, JOSEException {
