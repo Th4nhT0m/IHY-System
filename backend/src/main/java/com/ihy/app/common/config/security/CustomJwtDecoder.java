@@ -1,6 +1,6 @@
 package com.ihy.app.common.config.security;
 
-import com.ihy.app.auth.controller.IntrospectService;
+import com.ihy.app.auth.service.IntrospectService;
 import com.ihy.app.auth.dto.request.IntrospectRequest;
 import com.nimbusds.jose.JOSEException;
 import org.springframework.beans.factory.annotation.Autowired;
